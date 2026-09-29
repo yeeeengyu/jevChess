@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JevChess</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/game.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><span class="eyebrow">CHESS EXPERIMENT · 01</span><h1>JevChess<span>✳</span></h1>
+      <p>당신은 White. 상대는 mock JEV입니다.</p></header>
+    <div class="game-layout">
+      <section aria-label="체스판"><div id="board" class="board" aria-label="백색 시점 체스판"></div>
+        <p class="hint">말을 선택하고 이동할 칸을 클릭하세요.</p></section>
+      <aside aria-label="게임 정보">
+        <span class="eyebrow">LIVE GAME</span>
+        <dl>
+          <dt>현재 턴</dt><dd id="turn">—</dd>
+          <dt>JEV 상태</dt><dd id="jev-status">대기</dd>
+          <dt>직전 JEV 선택</dt><dd id="jev-move">—</dd>
+          <dt>게임 상태</dt><dd id="game-status">준비 중</dd>
+        </dl>
+        <div id="promotion" hidden><p>프로모션할 말을 선택하세요.</p>
+          <div class="promotion-options">
+            <button type="button" data-promotion="q">퀸</button><button type="button" data-promotion="r">룩</button>
+            <button type="button" data-promotion="b">비숍</button><button type="button" data-promotion="n">나이트</button>
+          </div>
+        </div>
+        <p id="message" role="status" aria-live="polite"></p>
+        <button type="button" id="retry" hidden>JEV 다시 요청</button>
+        <section class="jev-output-panel" aria-labelledby="jev-output-title">
+          <h2 id="jev-output-title">직전 JEV 응답 · JSON</h2>
+          <p id="jev-distribution" role="status">첫 응답을 기다리고 있습니다.</p>
+          <pre id="jev-output" tabindex="0" aria-label="선택한 수와 전체 합법 수의 선택 확률">아직 응답이 없습니다.</pre>
+          <p class="output-note">응답을 먼저 표시하고 3초 뒤 말을 이동합니다. JSON은 이동 후에도 남습니다.</p>
+        </section>
+        <p class="mock-note">MOCK · 균등 랜덤<br>각 합법 수의 선택 확률은 1 / 합법 수 개수입니다. 승률이나 실제 JEV 모델의 선호도가 아닙니다.</p>
+      </aside>
+    </div>
+    <footer><button type="button" id="new-game" class="primary">New Game <span>↗</span></button>
+      <small>게임은 서버 메모리에만 유지됩니다.</small></footer>
+  </main>
+</body>
+</html>
