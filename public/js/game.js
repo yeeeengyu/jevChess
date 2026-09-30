@@ -1,5 +1,4 @@
 const $ = (id) => document.getElementById(id);
-const pieces = { w: { k: '♔', q: '♕', r: '♖', b: '♗', n: '♘', p: '♙' }, b: { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' } };
 const names = { k: '킹', q: '퀸', r: '룩', b: '비숍', n: '나이트', p: '폰' };
 let state = null;
 let selected = null;
@@ -65,10 +64,12 @@ function render() {
       button.disabled = !canMove;
       button.setAttribute('aria-label', `${square}${piece ? ` ${piece.color === 'w' ? '백색' : '흑색'} ${names[piece.type]}` : ' 빈 칸'}`);
       if (piece) {
-        const span = document.createElement('span');
-        span.className = `piece ${piece.color === 'w' ? 'white' : 'black'}-piece`;
-        span.textContent = pieces[piece.color][piece.type];
-        button.append(span);
+        const image = document.createElement('img');
+        image.className = 'piece';
+        image.src = `/images/pieces/${piece.color}${piece.type}.svg`;
+        image.alt = '';
+        image.draggable = false;
+        button.append(image);
       }
       const coordinate = document.createElement('span');
       coordinate.className = 'coordinate';
