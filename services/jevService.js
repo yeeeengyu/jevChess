@@ -13,18 +13,19 @@ export async function selectMove({ fen, legalMoves }, {
     throw new JevError('JEV_INPUT_INVALID', 'JEV에 전달할 체스 상태가 올바르지 않습니다.');
   }
   let data;
+  const sideToMove = fen.split(' ')[1] === 'w' ? 'white' : 'black';
   try {
     const response = await fetchImpl(ENDPOINT, {
       method: 'POST', redirect: 'error',
       headers: { Authorization: `Bearer ${apiKey.trim()}`, 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(15000),
       body: JSON.stringify({
-        model, state: { fen, sideToMove: 'black', legalMoves },
+        model, state: { fen, sideToMove, legalMoves },
         questions: { move: {
           type: 'choice',
-          instructions: 'Choose the strongest legal chess move for Black in the supplied FEN. Prefer checkmate, avoid losing material, and improve the position. Choose exactly one of the supplied move IDs.',
+          instructions: `Choose the move that produces the strongest resulting chess position for ${sideToMove}, the side to move in the current FEN. Compare the supplied resulting board states and tactical consequences from that side's perspective. In each resulting FEN it is the opponent's turn; resultingLegalMoveCount counts their legal replies. Game over can mean a win or a draw, so distinguish these using the resulting position and check status. You must select exactly one of the provided legal move IDs.`,
           criteria: Object.fromEntries(legalMoves.map((move) => [move.id,
-            `${move.san}: ${move.from} to ${move.to}${move.promotion ? `, promote to ${move.promotion}` : ''}`]))
+            `Move ${move.san}. From ${move.from} to ${move.to}. Promotion piece: ${move.promotion || 'none'}. Resulting FEN: ${move.resultingFen}. Features: ${JSON.stringify(move.features)}.`]))
         } }
       })
     });

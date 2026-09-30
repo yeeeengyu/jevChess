@@ -90,6 +90,14 @@ function render() {
     $('jev-output').scrollTop = 0;
   }
   const chosen = output?.candidates?.find((candidate) => candidate.moveId === output.selectedMoveId);
+  const selectedMove = state?.jev.selectedMove;
+  $('jev-confidence').textContent = `Confidence: ${Number.isFinite(output?.confidence) ? (output.confidence * 100).toFixed(2) + '%' : '미제공'}`;
+  $('jev-result').hidden = !selectedMove?.resultingFen;
+  $('jev-resulting-fen').textContent = selectedMove?.resultingFen || '';
+  const features = selectedMove?.features;
+  $('jev-features').textContent = features
+    ? `잡기: ${features.capture ? names[features.capturedPiece] || features.capturedPiece : '없음'} · 체크: ${features.givesCheck ? '예' : '아니오'} · 프로모션: ${features.isPromotion ? names[selectedMove.promotion] : '없음'} · 캐슬링: ${features.isCastle ? '예' : '아니오'} · 상대 합법 수: ${features.resultingLegalMoveCount} · 종료: ${features.gameOverAfterMove ? '예' : '아니오'}`
+    : '';
   $('jev-distribution').textContent = state?.jev.outputWarning || (chosen
     ? `합법 수 ${output.candidates.length}개 · ${state.jev.selectedMove.san} 선택 확률 ${(chosen.probability * 100).toFixed(2)}%`
     : '첫 응답을 기다리고 있습니다.');

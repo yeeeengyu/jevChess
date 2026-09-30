@@ -9,7 +9,7 @@
 </head>
 <body>
   <main>
-    <header><span class="eyebrow">CHESS EXPERIMENT · 01</span><h1>JevChess<span>✳</span></h1>
+    <header><span class="eyebrow">CHESS EXPERIMENT · V2</span><h1>JevChess<span>✳</span></h1>
       <p>당신은 White. 상대는 JEV입니다.</p></header>
     <div class="game-layout">
       <section aria-label="체스판"><div id="board" class="board" aria-label="백색 시점 체스판"></div>
@@ -33,6 +33,12 @@
         <section class="jev-output-panel" aria-labelledby="jev-output-title">
           <h2 id="jev-output-title">직전 JEV 응답 · JSON</h2>
           <p id="jev-distribution" role="status">첫 응답을 기다리고 있습니다.</p>
+          <p id="jev-confidence" class="output-note">Confidence: —</p>
+          <p id="jev-features" class="output-note"></p>
+          <details id="jev-result" hidden open>
+            <summary>선택된 수의 결과 FEN</summary>
+            <code id="jev-resulting-fen"></code>
+          </details>
           <pre id="jev-output" tabindex="0" aria-label="선택한 수와 전체 합법 수의 선택 확률">아직 응답이 없습니다.</pre>
           <p class="output-note">응답을 먼저 표시하고 3초 뒤 말을 이동합니다. JSON은 이동 후에도 남습니다.</p>
         </section>

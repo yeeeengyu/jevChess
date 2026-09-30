@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { selectMove } from '../services/jevService.js';
+import { Chess } from 'chess.js';
+import { analyzeLegalMoves } from '../services/chessService.js';
 
-const input = { fen: 'test-position', legalMoves: [
-  { id: 'g8f6', san: 'Nf6', from: 'g8', to: 'f6', promotion: null },
-  { id: 'e7e5', san: 'e5', from: 'e7', to: 'e5', promotion: null }
-] };
+const chess = new Chess();
+chess.move('e4');
+const input = { fen: chess.fen(), legalMoves: analyzeLegalMoves(chess) };
 
 test('Choice API request and response preserve model probabilities', async () => {
   const result = await selectMove(input, { apiKey: 'test-key', fetchImpl: async (url, options) => {
@@ -16,7 +17,14 @@ test('Choice API request and response preserve model probabilities', async () =>
     const body = JSON.parse(options.body);
     assert.equal(body.state.fen, input.fen);
     assert.equal(body.questions.move.type, 'choice');
-    assert.deepEqual(Object.keys(body.questions.move.criteria), ['g8f6', 'e7e5']);
+    assert.equal(body.state.sideToMove, 'black');
+    assert.deepEqual(Object.keys(body.questions.move.criteria), input.legalMoves.map((move) => move.id));
+    assert.deepEqual(body.state.legalMoves, input.legalMoves);
+    for (const candidate of input.legalMoves) {
+      const description = body.questions.move.criteria[candidate.id];
+      assert.ok(description.includes(candidate.resultingFen));
+      assert.ok(description.includes(JSON.stringify(candidate.features)));
+    }
     return { ok: true, json: async () => ({ model: 'jev-test', answers: { move: {
       type: 'choice', choice: 'g8f6', confidence: 0.8, probabilities: { g8f6: 0.7, e7e5: 0.3 }
     } } }) };

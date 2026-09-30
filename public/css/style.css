@@ -29,6 +29,8 @@ dd { margin: 6px 0 0; font-weight: 650; font-size: 18px; }
 #jev-distribution, .output-note { font-size: 12px; line-height: 1.6; color: #66776b; }
 #jev-output { margin: 12px 0; padding: 14px; max-height: 340px; overflow: auto; background: #e9ede5; border: 1px solid #cbd4c7; border-radius: 5px; font: 12px/1.65 ui-monospace, monospace; tab-size: 2; }
 #jev-output:focus-visible { outline: 2px solid #b3653f; }
+#jev-result { font-size: 12px; margin: 12px 0; }
+#jev-resulting-fen { display: block; overflow-wrap: anywhere; margin-top: 8px; line-height: 1.6; }
 .promotion-options { display: flex; gap: 5px; flex-wrap: wrap; }
 footer { margin-top: 16px; display: flex; align-items: center; gap: 20px; }
 .primary { background: #294838; color: white; border: 0; min-width: 155px; padding: 14px 20px; }

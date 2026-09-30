@@ -18,6 +18,45 @@ function legalMoves(chess) {
   }));
 }
 
+export function analyzeLegalMoves(chess) {
+  let candidateId = null;
+  try {
+    const fen = chess.fen();
+    const history = chess.history({ verbose: true });
+    const initialFen = history[0]?.before || fen;
+    return legalMoves(chess).map((candidate) => {
+      candidateId = candidate.id;
+      // Rebuild a separate game for every candidate, including repetition history.
+      const position = new Chess(initialFen);
+      for (const previous of history) {
+        position.move({ from: previous.from, to: previous.to,
+          ...(previous.promotion && { promotion: previous.promotion }) });
+      }
+      if (position.fen() !== fen) throw new Error('Clone position does not match source.');
+      const applied = position.move({ from: candidate.from, to: candidate.to,
+        ...(candidate.promotion && { promotion: candidate.promotion }) });
+      const inCheck = position.inCheck();
+      return {
+        ...candidate,
+        resultingFen: position.fen(),
+        features: {
+          capture: Boolean(applied.captured),
+          capturedPiece: applied.captured || null,
+          givesCheck: inCheck,
+          isPromotion: Boolean(applied.promotion),
+          isCastle: applied.flags.includes('k') || applied.flags.includes('q'),
+          resultingLegalMoveCount: position.moves().length,
+          opponentInCheck: inCheck,
+          gameOverAfterMove: position.isGameOver()
+        }
+      };
+    });
+  } catch (error) {
+    console.error('JEV candidate analysis failed:', { candidateId, reason: error.message });
+    throw new GameError(502, 'JEV_ANALYSIS_FAILED', '후보 결과 상태를 계산하지 못했습니다. JEV 턴을 다시 요청해 주세요.');
+  }
+}
+
 function structuredOutput(response, available) {
   const output = { selectedMoveId: response.selectedMoveId };
   if (typeof response.model === 'string') output.model = response.model;
@@ -107,10 +146,10 @@ async function playJev(game, chooseMove) {
   game.version += 1;
   const fen = game.chess.fen();
   const beforeMove = { fen, board: game.chess.board(), inCheck: game.chess.inCheck() };
-  const available = legalMoves(game.chess);
   try {
+    const available = analyzeLegalMoves(game.chess);
     // A copy prevents a provider from changing the authoritative candidate list.
-    const response = await chooseMove({ fen, legalMoves: available.map((move) => ({ ...move })) });
+    const response = await chooseMove({ fen, legalMoves: structuredClone(available) });
     const selected = available.find((move) => move.id === response?.selectedMoveId);
     if (!selected) throw new Error('JEV returned a move outside legalMoves.');
     if (game.chess.fen() !== fen || game.chess.turn() !== 'b') {
@@ -121,17 +160,24 @@ async function playJev(game, chooseMove) {
     const { output, outputWarning } = structuredOutput(response, available);
     game.chess.move({ from: current.from, to: current.to, ...(current.promotion && { promotion: current.promotion }) });
     game.jev = {
-      status: 'completed', selectedMove: { id: current.id, san: current.san },
+      status: 'completed', selectedMove: selected,
       source: 'jev', beforeMove, output, outputWarning
     };
     game.phase = result(game.chess) ? 'finished' : 'human_turn';
+    if (process.env.JEV_DEBUG === '1') {
+      console.info('JEV turn:', {
+        legalMoveCount: available.length, selectedMove: selected.id,
+        probability: output.candidates?.find((candidate) => candidate.moveId === selected.id)?.probability ?? null,
+        resultingFen: selected.resultingFen
+      });
+    }
   } catch (error) {
     // The human move remains committed. Retry only the black turn.
     game.phase = 'jev_error';
     game.jev.status = 'error';
     game.error = {
-      code: error instanceof JevError ? error.code : 'JEV_FAILED',
-      message: error instanceof JevError ? error.message : 'JEV가 유효한 수를 반환하지 못했습니다. 다시 요청해 주세요.',
+      code: error instanceof JevError || error instanceof GameError ? error.code : 'JEV_FAILED',
+      message: error instanceof JevError || error instanceof GameError ? error.message : 'JEV가 유효한 수를 반환하지 못했습니다. 다시 요청해 주세요.',
       retryable: true
     };
   }
