@@ -2,9 +2,13 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import gameRoutes from './routes/gameRoutes.js';
+import { loadEnvFile } from 'node:process';
 
 const app = express();
 const root = path.dirname(fileURLToPath(import.meta.url));
+try { loadEnvFile(path.join(root, '.env')); } catch (error) {
+  if (error.code !== 'ENOENT') throw new Error('.env 파일을 불러올 수 없습니다.');
+}
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(root, 'views'));

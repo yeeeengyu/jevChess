@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Chess } from 'chess.js';
-import { selectMove } from './jevService.js';
+import { selectMove, JevError } from './jevService.js';
 
 const games = new Map();
 
@@ -20,6 +20,8 @@ function legalMoves(chess) {
 
 function structuredOutput(response, available) {
   const output = { selectedMoveId: response.selectedMoveId };
+  if (typeof response.model === 'string') output.model = response.model;
+  if (Number.isFinite(response.confidence)) output.confidence = response.confidence;
   if (response.candidates === undefined) {
     return { output, outputWarning: '선택 확률이 제공되지 않았습니다.' };
   }
@@ -75,7 +77,7 @@ function snapshot(game) {
 export function createGame() {
   const game = {
     id: randomUUID(), chess: new Chess(), version: 0, phase: 'human_turn',
-    jev: { status: 'idle', selectedMove: null, source: 'mock' }, error: null
+    jev: { status: 'idle', selectedMove: null, source: 'jev' }, error: null
   };
   games.set(game.id, game);
   return snapshot(game);
@@ -120,14 +122,18 @@ async function playJev(game, chooseMove) {
     game.chess.move({ from: current.from, to: current.to, ...(current.promotion && { promotion: current.promotion }) });
     game.jev = {
       status: 'completed', selectedMove: { id: current.id, san: current.san },
-      source: 'mock', beforeMove, output, outputWarning
+      source: 'jev', beforeMove, output, outputWarning
     };
     game.phase = result(game.chess) ? 'finished' : 'human_turn';
-  } catch {
+  } catch (error) {
     // The human move remains committed. Retry only the black turn.
     game.phase = 'jev_error';
     game.jev.status = 'error';
-    game.error = { code: 'JEV_FAILED', message: 'JEV가 유효한 수를 반환하지 못했습니다. 다시 요청해 주세요.', retryable: true };
+    game.error = {
+      code: error instanceof JevError ? error.code : 'JEV_FAILED',
+      message: error instanceof JevError ? error.message : 'JEV가 유효한 수를 반환하지 못했습니다. 다시 요청해 주세요.',
+      retryable: true
+    };
   }
   game.version += 1;
   return snapshot(game);

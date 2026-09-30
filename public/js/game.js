@@ -78,7 +78,7 @@ function render() {
       $('board').append(button);
     }
   }
-  $('turn').textContent = jevPreview ? 'Black · mock JEV' : state ? (state.result ? '게임 종료' : state.turn === 'w' ? 'White · 당신' : 'Black · mock JEV') : '—';
+  $('turn').textContent = jevPreview ? 'Black · JEV' : state ? (state.result ? '게임 종료' : state.turn === 'w' ? 'White · 당신' : 'Black · JEV') : '—';
   $('jev-status').textContent = jevPreview ? '선택 완료 · 3초 후 보드 반영' : busy ? '요청 처리 중…' : ({ idle: '대기', thinking: '선택 중…', completed: '선택 완료', error: '오류 · 재시도 가능' }[state?.jev.status] || '대기');
   $('jev-move').textContent = state?.jev.selectedMove?.san || '—';
   const output = state?.jev.output;

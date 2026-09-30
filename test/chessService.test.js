@@ -5,13 +5,15 @@ import { createGame, getGame, playHumanMove, retryJev } from '../services/chessS
 const move = (version, from, to) => ({ version, move: { from, to } });
 const pick = (id) => async () => ({ selectedMoveId: id });
 
-test('human move and mock JEV complete a turn', async () => {
+test('human move and injected provider complete a turn', async () => {
   const game = createGame();
   assert.equal(game.legalMoves.length, 20);
-  const next = await playHumanMove(game.gameId, move(game.version, 'e2', 'e4'));
+  const next = await playHumanMove(game.gameId, move(game.version, 'e2', 'e4'), async ({ legalMoves }) => ({
+    selectedMoveId: 'e7e5', candidates: legalMoves.map((move) => ({ moveId: move.id, probability: 1 / legalMoves.length }))
+  }));
   assert.equal(next.phase, 'human_turn');
   assert.equal(next.turn, 'w');
-  assert.equal(next.jev.source, 'mock');
+  assert.equal(next.jev.source, 'jev');
   assert.ok(next.jev.selectedMove.id);
   const output = next.jev.output;
   assert.equal(output.selectedMoveId, next.jev.selectedMove.id);

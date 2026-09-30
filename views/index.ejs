@@ -10,7 +10,7 @@
 <body>
   <main>
     <header><span class="eyebrow">CHESS EXPERIMENT · 01</span><h1>JevChess<span>✳</span></h1>
-      <p>당신은 White. 상대는 mock JEV입니다.</p></header>
+      <p>당신은 White. 상대는 JEV입니다.</p></header>
     <div class="game-layout">
       <section aria-label="체스판"><div id="board" class="board" aria-label="백색 시점 체스판"></div>
         <p class="hint">말을 선택하고 이동할 칸을 클릭하세요.</p></section>
@@ -36,7 +36,7 @@
           <pre id="jev-output" tabindex="0" aria-label="선택한 수와 전체 합법 수의 선택 확률">아직 응답이 없습니다.</pre>
           <p class="output-note">응답을 먼저 표시하고 3초 뒤 말을 이동합니다. JSON은 이동 후에도 남습니다.</p>
         </section>
-        <p class="mock-note">MOCK · 균등 랜덤<br>각 합법 수의 선택 확률은 1 / 합법 수 개수입니다. 승률이나 실제 JEV 모델의 선호도가 아닙니다.</p>
+        <p class="mock-note">JEV · Choice API<br>서버가 제공한 합법 수 중 JEV가 선택합니다. 확률과 confidence는 API 응답 값이며 체스 승률을 뜻하지 않습니다.</p>
       </aside>
     </div>
     <footer><button type="button" id="new-game" class="primary">New Game <span>↗</span></button>
